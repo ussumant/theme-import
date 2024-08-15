@@ -1,30 +1,25 @@
 // script.js
 
+let selectedFileKey = null;
+
 document.getElementById('figmaForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
-    const figmaUrl = document.getElementById('figmaUrl').value;
     const figmaToken = document.getElementById('figmaToken').value;
-    const resultDiv = document.getElementById('result');
-    const generatedTheme = document.getElementById('generatedTheme');
     const statusMessage = document.getElementById('statusMessage');
+    const fileList = document.getElementById('fileList');
 
-    // Show status message
-    statusMessage.textContent = 'Extracting theme from Figma...';
+    statusMessage.textContent = 'Fetching Figma files...';
     statusMessage.style.display = 'block';
-    resultDiv.style.display = 'none';
+    fileList.style.display = 'none';
 
-    // Validate inputs
-    if (!figmaUrl || !figmaToken) {
-        statusMessage.textContent = 'Please enter both Figma URL and access token.';
+    if (!figmaToken) {
+        statusMessage.textContent = 'Please enter your Figma Personal Access Token.';
         return;
     }
 
-    // Extract file key from Figma URL
-    const fileKey = figmaUrl.split('/').pop();
-    
-    // Call Figma API to get file data
-    fetch(`https://api.figma.com/v1/files/${fileKey}`, {
+    // Fetch Figma files
+    fetch('https://api.figma.com/v1/me/files', {
         headers: {
             'X-Figma-Token': figmaToken
         }
@@ -36,7 +31,60 @@ document.getElementById('figmaForm').addEventListener('submit', function(e) {
         return response.json();
     })
     .then(data => {
-        // Process Figma data and extract theme information
+        displayFileList(data.files);
+        statusMessage.style.display = 'none';
+        document.getElementById('extractTheme').style.display = 'block';
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        statusMessage.textContent = `Error: ${error.message}. Please check your access token.`;
+    });
+});
+
+function displayFileList(files) {
+    const fileList = document.getElementById('fileList');
+    fileList.innerHTML = '';
+    files.forEach(file => {
+        const div = document.createElement('div');
+        div.textContent = file.name;
+        div.dataset.key = file.key;
+        div.addEventListener('click', function() {
+            selectedFileKey = this.dataset.key;
+            document.querySelectorAll('#fileList div').forEach(el => el.classList.remove('selected'));
+            this.classList.add('selected');
+        });
+        fileList.appendChild(div);
+    });
+    fileList.style.display = 'block';
+}
+
+document.getElementById('extractTheme').addEventListener('click', function() {
+    if (!selectedFileKey) {
+        alert('Please select a Figma file first.');
+        return;
+    }
+
+    const figmaToken = document.getElementById('figmaToken').value;
+    const statusMessage = document.getElementById('statusMessage');
+    const resultDiv = document.getElementById('result');
+    const generatedTheme = document.getElementById('generatedTheme');
+
+    statusMessage.textContent = 'Extracting theme from Figma...';
+    statusMessage.style.display = 'block';
+    resultDiv.style.display = 'none';
+
+    fetch(`https://api.figma.com/v1/files/${selectedFileKey}`, {
+        headers: {
+            'X-Figma-Token': figmaToken
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
         const theme = processThemeFromFigma(data);
         generatedTheme.value = JSON.stringify(theme, null, 2);
         resultDiv.style.display = 'block';
@@ -44,12 +92,12 @@ document.getElementById('figmaForm').addEventListener('submit', function(e) {
     })
     .catch(error => {
         console.error('Error:', error);
-        statusMessage.textContent = `Error: ${error.message}. Please check your URL and access token.`;
+        statusMessage.textContent = `Error: ${error.message}. Please try again.`;
     });
 });
 
 function processThemeFromFigma(figmaData) {
-    // ... (rest of the processThemeFromFigma function remains the same)
+    // ... (processThemeFromFigma function remains the same)
 }
 
 document.getElementById('copyButton').addEventListener('click', function() {
