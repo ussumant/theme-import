@@ -4,83 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CustomerGlu Theme Import from Figma</title>
+    <!-- ... (previous styles remain the same) ... -->
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            background-color: #f5f5f7;
-            color: #1d1d1f;
-            line-height: 1.47059;
-            font-weight: 400;
-            letter-spacing: -.022em;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 30px;
-            background-color: #ffffff;
-            border-radius: 18px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            font-size: 28px;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 14px;
-            font-weight: 600;
-        }
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 20px;
+        /* ... (previous styles) ... */
+        #statusMessage {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #f7f7f7;
             border: 1px solid #d2d2d7;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.2s ease-in-out;
-        }
-        input[type="text"]:focus, input[type="password"]:focus {
-            outline: none;
-            border-color: #0071e3;
-            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
-        }
-        button {
-            background-color: #0071e3;
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s ease-in-out;
-        }
-        button:hover {
-            background-color: #0077ed;
-        }
-        #result {
-            margin-top: 30px;
-        }
-        textarea {
-            width: 100%;
-            height: 200px;
-            padding: 12px;
-            border: 1px solid #d2d2d7;
-            border-radius: 8px;
-            font-size: 14px;
-            font-family: monospace;
-            resize: vertical;
-        }
-        #copyButton {
-            margin-top: 10px;
-            background-color: #34c759;
-        }
-        #copyButton:hover {
-            background-color: #30d158;
+            display: none;
         }
     </style>
 </head>
@@ -97,6 +30,8 @@
             <button type="submit">Extract Theme from Figma</button>
         </form>
         
+        <div id="statusMessage"></div>
+
         <div id="result" style="display: none;">
             <label for="generatedTheme">Generated Theme</label>
             <textarea id="generatedTheme" readonly></textarea>
