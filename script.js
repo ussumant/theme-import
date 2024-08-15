@@ -3,30 +3,28 @@
 let selectedFileKey = null;
 
 document.addEventListener('DOMContentLoaded', function() {
-    const figmaForm = document.getElementById('figmaForm');
     const figmaTokenInput = document.getElementById('figmaToken');
-    const statusMessage = document.getElementById('statusMessage');
+    const fetchFilesButton = document.getElementById('fetchFiles');
+    const tokenDisplay = document.getElementById('tokenDisplay');
     const fileList = document.getElementById('fileList');
     const extractThemeButton = document.getElementById('extractTheme');
     const resultDiv = document.getElementById('result');
-    const generatedTheme = document.getElementById('generatedTheme');
-    const copyButton = document.getElementById('copyButton');
 
-    figmaForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const figmaToken = figmaTokenInput.value;
+    figmaTokenInput.addEventListener('input', function() {
+        tokenDisplay.textContent = `Current Token: ${this.value}`;
+    });
 
-        statusMessage.textContent = 'Fetching Figma files...';
-        statusMessage.style.display = 'block';
-        fileList.style.display = 'none';
+    fetchFilesButton.addEventListener('click', function() {
+        const figmaToken = figmaTokenInput.value.trim();
+        tokenDisplay.textContent = `Token being used: ${figmaToken}`;
 
         if (!figmaToken) {
-            statusMessage.textContent = 'Please enter your Figma Personal Access Token.';
+            alert('Please enter a Figma Personal Access Token.');
             return;
         }
 
-        // Fetch Figma files
+        fileList.innerHTML = 'Fetching files...';
+        
         fetch('https://api.figma.com/v1/me/files', {
             headers: {
                 'X-Figma-Token': figmaToken
@@ -40,12 +38,11 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(data => {
             displayFileList(data.files);
-            statusMessage.style.display = 'none';
             extractThemeButton.style.display = 'block';
         })
         .catch(error => {
             console.error('Error:', error);
-            statusMessage.textContent = `Error: ${error.message}. Please check your access token.`;
+            fileList.innerHTML = `Error: ${error.message}. Please check your access token.`;
         });
     });
 
@@ -62,7 +59,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             fileList.appendChild(div);
         });
-        fileList.style.display = 'block';
     }
 
     extractThemeButton.addEventListener('click', function() {
@@ -71,11 +67,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        const figmaToken = figmaTokenInput.value;
-
-        statusMessage.textContent = 'Extracting theme from Figma...';
-        statusMessage.style.display = 'block';
-        resultDiv.style.display = 'none';
+        const figmaToken = figmaTokenInput.value.trim();
+        resultDiv.textContent = 'Extracting theme...';
 
         fetch(`https://api.figma.com/v1/files/${selectedFileKey}`, {
             headers: {
@@ -90,67 +83,35 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(data => {
             const theme = processThemeFromFigma(data);
-            generatedTheme.value = JSON.stringify(theme, null, 2);
-            resultDiv.style.display = 'block';
-            statusMessage.style.display = 'none';
+            resultDiv.textContent = JSON.stringify(theme, null, 2);
         })
         .catch(error => {
             console.error('Error:', error);
-            statusMessage.textContent = `Error: ${error.message}. Please try again.`;
+            resultDiv.textContent = `Error: ${error.message}. Please try again.`;
         });
     });
 
     function processThemeFromFigma(figmaData) {
-        // Implement your theme extraction logic here
-        // This is a placeholder implementation
+        // This is a placeholder. Implement your actual theme extraction logic here.
         return {
             "__HACKY__THEME": {
                 "version": "1",
                 "fonts": {
                     "primaryFont": {
-                        "family": "Roboto",
-                        "url": "https://fonts.googleapis.com/css2?family=Roboto&display=swap",
+                        "family": "Arial",
                         "fallback": "sans-serif",
-                        "type": "GOOGLE",
                         "variable": "--primary-font"
-                    },
-                    "secondaryFont": null
-                },
-                "deviceVariables": {
-                    "mobile": {
-                        "--heading-1": "400 32px var(--primary-font)",
-                        "--heading-2": "400 24px var(--primary-font)"
                     }
                 },
                 "paletteVariables": {
-                    "dark": {
-                        "default": {
-                            "--primary": "#000000",
-                            "--secondary": "#ffffff"
-                        },
-                        "custom": {
-                            "--primary": "#000000",
-                            "--secondary": "#ffffff"
-                        }
-                    },
                     "light": {
                         "default": {
-                            "--primary": "#ffffff",
-                            "--secondary": "#000000"
-                        },
-                        "custom": {
-                            "--primary": "#ffffff",
-                            "--secondary": "#000000"
+                            "--primary": "#000000",
+                            "--secondary": "#ffffff"
                         }
                     }
                 }
             }
         };
     }
-
-    copyButton.addEventListener('click', function() {
-        generatedTheme.select();
-        document.execCommand('copy');
-        alert('Copied to clipboard!');
-    });
 });
