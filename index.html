@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CustomerGlu Theme Import</title>
+    <title>CustomerGlu Theme Import from Figma</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 p-8">
     <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
         <div class="p-8">
-            <div class="uppercase tracking-wide text-sm text-indigo-500 font-semibold mb-1">CustomerGlu Theme Import</div>
-            <form id="themeForm" class="mt-6">
+            <div class="uppercase tracking-wide text-sm text-indigo-500 font-semibold mb-1">CustomerGlu Theme Import from Figma</div>
+            <form id="figmaForm" class="mt-6">
                 <div class="mb-4">
                     <label for="figmaUrl" class="block text-gray-700 text-sm font-bold mb-2">Figma File URL:</label>
                     <input type="text" id="figmaUrl" name="figmaUrl" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
@@ -19,38 +19,9 @@
                     <label for="figmaToken" class="block text-gray-700 text-sm font-bold mb-2">Figma Personal Access Token:</label>
                     <input type="password" id="figmaToken" name="figmaToken" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                 </div>
-                <div class="mb-4">
-                    <label for="primaryColor" class="block text-gray-700 text-sm font-bold mb-2">Primary Color (hex):</label>
-                    <input type="text" id="primaryColor" name="primaryColor" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                </div>
-                <div class="mb-4">
-                    <label for="secondaryColor" class="block text-gray-700 text-sm font-bold mb-2">Secondary Color (hex):</label>
-                    <input type="text" id="secondaryColor" name="secondaryColor" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                </div>
-                <div class="mb-4">
-                    <label for="fontFamily" class="block text-gray-700 text-sm font-bold mb-2">Font Family:</label>
-                    <select id="fontFamily" name="fontFamily" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <option value="Roboto">Roboto</option>
-                        <option value="Open Sans">Open Sans</option>
-                        <option value="Lato">Lato</option>
-                        <option value="Montserrat">Montserrat</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label for="heading1Size" class="block text-gray-700 text-sm font-bold mb-2">Heading 1 Size:</label>
-                    <input type="text" id="heading1Size" name="heading1Size" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                </div>
-                <div class="mb-4">
-                    <label for="heading2Size" class="block text-gray-700 text-sm font-bold mb-2">Heading 2 Size:</label>
-                    <input type="text" id="heading2Size" name="heading2Size" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                </div>
-                <div class="mb-6">
-                    <label for="bodyTextSize" class="block text-gray-700 text-sm font-bold mb-2">Body Text Size:</label>
-                    <input type="text" id="bodyTextSize" name="bodyTextSize" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                </div>
                 <div class="flex items-center justify-between">
                     <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                        Generate Theme
+                        Extract Theme from Figma
                     </button>
                 </div>
             </form>
@@ -66,3 +37,99 @@
     <script src="script.js"></script>
 </body>
 </html>
+
+// Update the JavaScript file (script.js) to interact with Figma API
+document.getElementById('figmaForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const figmaUrl = document.getElementById('figmaUrl').value;
+    const figmaToken = document.getElementById('figmaToken').value;
+    
+    // Extract file key from Figma URL
+    const fileKey = figmaUrl.split('/').pop();
+    
+    // Call Figma API to get file data
+    fetch(`https://api.figma.com/v1/files/${fileKey}`, {
+        headers: {
+            'X-Figma-Token': figmaToken
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Process Figma data and extract theme information
+        const theme = processThemeFromFigma(data);
+        document.getElementById('generatedTheme').value = JSON.stringify(theme, null, 2);
+        document.getElementById('result').classList.remove('hidden');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error fetching data from Figma. Please check your URL and access token.');
+    });
+});
+
+function processThemeFromFigma(figmaData) {
+    // Extract color styles
+    const colorStyles = figmaData.styles.filter(style => style.style_type === 'FILL');
+    const primaryColor = colorStyles.find(style => style.name.toLowerCase().includes('primary'))?.style_type === 'FILL';
+    const secondaryColor = colorStyles.find(style => style.name.toLowerCase().includes('secondary'))?.style_type === 'FILL';
+
+    // Extract text styles
+    const textStyles = figmaData.styles.filter(style => style.style_type === 'TEXT');
+    const heading1Style = textStyles.find(style => style.name.toLowerCase().includes('heading 1'));
+    const heading2Style = textStyles.find(style => style.name.toLowerCase().includes('heading 2'));
+    const bodyStyle = textStyles.find(style => style.name.toLowerCase().includes('body'));
+
+    // Extract font family
+    const fontFamily = bodyStyle?.style.fontFamily || 'Roboto';
+
+    return {
+        "__HACKY__THEME": {
+            "version": "1",
+            "fonts": {
+                "primaryFont": {
+                    "family": fontFamily,
+                    "url": `https://fonts.googleapis.com/css2?family=${fontFamily.replace(' ', '+')}&display=swap`,
+                    "fallback": "sans-serif",
+                    "type": "GOOGLE",
+                    "variable": "--primary-font"
+                },
+                "secondaryFont": null
+            },
+            "deviceVariables": {
+                "mobile": {
+                    "--heading-1": `400 ${heading1Style?.style.fontSize || '32px'} var(--primary-font)`,
+                    "--heading-2": `400 ${heading2Style?.style.fontSize || '24px'} var(--primary-font)`
+                }
+            },
+            "paletteVariables": {
+                "dark": {
+                    "default": {
+                        "--primary": primaryColor || "#000000",
+                        "--secondary": secondaryColor || "#ffffff"
+                    },
+                    "custom": {
+                        "--primary": primaryColor || "#000000",
+                        "--secondary": secondaryColor || "#ffffff"
+                    }
+                },
+                "light": {
+                    "default": {
+                        "--primary": primaryColor || "#ffffff",
+                        "--secondary": secondaryColor || "#000000"
+                    },
+                    "custom": {
+                        "--primary": primaryColor || "#ffffff",
+                        "--secondary": secondaryColor || "#000000"
+                    }
+                }
+            }
+        }
+    };
+}
+
+document.getElementById('copyButton').addEventListener('click', function() {
+    const generatedTheme = document.getElementById('generatedTheme');
+    generatedTheme.select();
+    document.execCommand('copy');
+    alert('Copied to clipboard!');
+});
