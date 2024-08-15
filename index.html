@@ -4,16 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CustomerGlu Theme Import from Figma</title>
-    <!-- ... (previous styles remain the same) ... -->
     <style>
-        /* ... (previous styles) ... */
-        #statusMessage {
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 8px;
-            background-color: #f7f7f7;
+        /* ... (previous styles remain the same) ... */
+        #fileList {
+            max-height: 300px;
+            overflow-y: auto;
             border: 1px solid #d2d2d7;
+            border-radius: 8px;
+            margin-top: 20px;
             display: none;
+        }
+        #fileList div {
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        #fileList div:hover {
+            background-color: #f5f5f7;
+        }
+        #fileList div.selected {
+            background-color: #e8e8ed;
         }
     </style>
 </head>
@@ -21,16 +31,17 @@
     <div class="container">
         <h1>CustomerGlu Theme Import</h1>
         <form id="figmaForm">
-            <label for="figmaUrl">Figma File URL</label>
-            <input type="text" id="figmaUrl" name="figmaUrl" placeholder="https://www.figma.com/file/...">
-            
             <label for="figmaToken">Figma Personal Access Token</label>
             <input type="password" id="figmaToken" name="figmaToken" placeholder="Enter your personal access token">
             
-            <button type="submit">Extract Theme from Figma</button>
+            <button type="submit">Fetch Figma Files</button>
         </form>
         
         <div id="statusMessage"></div>
+
+        <div id="fileList"></div>
+
+        <button id="extractTheme" style="display: none; margin-top: 20px;">Extract Theme from Selected File</button>
 
         <div id="result" style="display: none;">
             <label for="generatedTheme">Generated Theme</label>
